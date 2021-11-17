@@ -14,8 +14,8 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(url: "https://github.com/danger/swift.git", from: "3.0.0"),
-        .package(url: "https://github.com/el-hoshino/DangerSwiftHammer", from: "0.2.0"),
+        .package(name: "danger-swift", url: "https://github.com/danger/swift.git", from: "3.0.0"),
+        .package(name: "DangerSwiftHammer", url: "https://github.com/el-hoshino/DangerSwiftHammer", from: "0.2.0"),
         .package(name: "DangerSwiftShoki", url: "git@github.com:yumemi/danger-swift-shoki.git", .branch("feature/initial")),
     ],
     targets: [
@@ -24,7 +24,7 @@ let package = Package(
         .target(
             name: "DangerSwiftEda",
             dependencies: [
-                .product(name: "Danger", package: "swift"),
+                .product(name: "Danger", package: "danger-swift"),
                 "DangerSwiftHammer",
                 "DangerSwiftShoki",
             ]),
