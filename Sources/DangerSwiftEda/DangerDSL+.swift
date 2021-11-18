@@ -18,10 +18,11 @@ extension DangerDSL {
             modifiedFilesResolver: { git.modifiedFiles },
             commitsResolver: { git.commits },
             hammerResolver: { hammer },
+            shokiResolver: { shoki },
             messageExecutor: { message($0) },
             warnExecutor: { warn($0) },
-            failExecutor: { fail($0) },
-            reportExecutor: { shoki.report($0) })
+            failExecutor: { fail($0) }
+        )
     }
     
 }
