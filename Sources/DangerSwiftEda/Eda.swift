@@ -24,12 +24,11 @@ public struct Eda {
     private let commitsResolver: () -> [GitCommit]
     
     private let hammerResolver: () -> Hammer
+    private let shokiResolver: () -> Shoki
     
     private let messageExecutor: (String) -> Void
     private let warnExecutor: (String) -> Void
     private let failExecutor: (String) -> Void
-    
-    private let reportExecutor: (CheckResult) -> Void
     
     init(
         headBranchResolver: @escaping () -> Branch?,
@@ -39,10 +38,10 @@ public struct Eda {
         modifiedFilesResolver: @escaping () -> [String],
         commitsResolver: @escaping () -> [GitCommit],
         hammerResolver: @escaping () -> Hammer,
+        shokiResolver: @escaping () -> Shoki,
         messageExecutor: @escaping (String) -> Void,
         warnExecutor: @escaping (String) -> Void,
-        failExecutor: @escaping (String) -> Void,
-        reportExecutor: @escaping (CheckResult) -> Void
+        failExecutor: @escaping (String) -> Void
     ) {
         self.headBranchResolver = headBranchResolver
         self.baseBranchResolver = baseBranchResolver
@@ -51,10 +50,10 @@ public struct Eda {
         self.modifiedFilesResolver = modifiedFilesResolver
         self.commitsResolver = commitsResolver
         self.hammerResolver = hammerResolver
+        self.shokiResolver = shokiResolver
         self.messageExecutor = messageExecutor
         self.warnExecutor = warnExecutor
         self.failExecutor = failExecutor
-        self.reportExecutor = reportExecutor
     }
     
 }
@@ -90,6 +89,10 @@ extension Eda {
         hammerResolver()
     }
     
+    var shoki: Shoki {
+        shokiResolver()
+    }
+    
     func message(_ message: String) {
         messageExecutor(message)
     }
@@ -100,10 +103,6 @@ extension Eda {
     
     func fail(_ message: String) {
         failExecutor(message)
-    }
-    
-    func report(_ result: CheckResult) {
-        reportExecutor(result)
     }
     
 }
@@ -388,7 +387,7 @@ extension Eda {
             }
         }(headBranch.type)
         
-        report(checkResult)
+        shoki.report(checkResult)
         
     }
     
