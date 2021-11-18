@@ -313,7 +313,7 @@ extension Eda {
     
     func doHotFixPRCheck(configuration: GitFlowCheckConfiguration) -> CheckResult {
         
-        var result = CheckResult(title: "Release PR チェック")
+        var result = CheckResult(title: "HotFix PR Check")
         
         // HotFix PRs should be merged both to main and develop branch
         checkBaseBranch(expected: [.main, .develop], into: &result)
