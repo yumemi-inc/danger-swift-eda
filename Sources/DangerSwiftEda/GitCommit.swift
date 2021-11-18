@@ -7,7 +7,9 @@
 
 import Danger
 
-extension Git.Commit {
+typealias GitCommit = Git.Commit
+
+extension GitCommit {
     
     var isMergeCommit: Bool {
         
