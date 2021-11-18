@@ -262,13 +262,13 @@ extension Eda {
         
         checkBaseBranch(expected: [.develop], into: &result)
         
-        if !configuration.acceptMergeCommitsInFeaturePRs {
+        if !configuration.acceptsMergeCommitsInFeaturePRs {
             checkNoMergeCommitsIncluded(into: &result)
         }
         
-        checkDiffAmount(lessThan: configuration.recommendMaxDiffAmountInFeaturePRs, into: &result)
+        checkDiffAmount(lessThan: configuration.recommendedMaxDiffAmountInFeaturePRs, into: &result)
         
-        if case .yes(path: let filePath) = configuration.recommendChangeLogUpdate {
+        if case .yes(path: let filePath) = configuration.suggestsChangeLogUpdate {
             checkChangeLogModification(at: filePath, into: &result)
         }
         
@@ -331,9 +331,9 @@ extension Eda {
         // HotFix PRs should not contain any merge commits at first place.
         checkNoMergeCommitsIncluded(into: &result)
         
-        checkDiffAmount(lessThan: configuration.recommendMaxDiffAmountInFeaturePRs, into: &result)
+        checkDiffAmount(lessThan: configuration.recommendedMaxDiffAmountInFeaturePRs, into: &result)
         
-        if case .yes(path: let filePath) = configuration.recommendChangeLogUpdate {
+        if case .yes(path: let filePath) = configuration.suggestsChangeLogUpdate {
             checkChangeLogModification(at: filePath, into: &result)
         }
         

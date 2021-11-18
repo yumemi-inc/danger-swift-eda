@@ -19,9 +19,9 @@ public struct GitFlowCheckConfiguration {
         case yes(path: String, keyword: String)
     }
     
-    public var acceptMergeCommitsInFeaturePRs: Bool = false
-    public var recommendMaxDiffAmountInFeaturePRs: Int = 300
-    public var recommendChangeLogUpdate: ChangeLogUpdateRequirement = .yes(path: "CHANGELOG.md")
+    public var acceptsMergeCommitsInFeaturePRs: Bool = false
+    public var recommendedMaxDiffAmountInFeaturePRs: Int = 300
+    public var suggestsChangeLogUpdate: ChangeLogUpdateRequirement = .yes(path: "CHANGELOG.md")
     public var requiresVersionModificationInReleasePRs: VersionUpdateRequirement = .no
     public var ticketAddressResolver: ((String) -> String)?
     
