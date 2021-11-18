@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Danger
 import DangerSwiftShoki
 import DangerSwiftHammer
 
@@ -22,7 +21,7 @@ public struct Eda {
     private let deletionLinesResolver: () -> Int
     private let modifiedFilesResolver: () -> [String]
     
-    private let commitsResolver: () -> [Git.Commit]
+    private let commitsResolver: () -> [GitCommit]
     
     private let hammerResolver: () -> Hammer
     
@@ -38,7 +37,7 @@ public struct Eda {
         additionLinesResolver: @escaping () -> Int,
         deletionLinesResolver: @escaping () -> Int,
         modifiedFilesResolver: @escaping () -> [String],
-        commitsResolver: @escaping () -> [Git.Commit],
+        commitsResolver: @escaping () -> [GitCommit],
         hammerResolver: @escaping () -> Hammer,
         messageExecutor: @escaping (String) -> Void,
         warnExecutor: @escaping (String) -> Void,
@@ -83,7 +82,7 @@ extension Eda {
         modifiedFilesResolver()
     }
     
-    var commits: [Git.Commit] {
+    var commits: [GitCommit] {
         commitsResolver()
     }
     
