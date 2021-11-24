@@ -5,9 +5,9 @@
         "package": "DangerSwiftShoki",
         "repositoryURL": "git@github.com:yumemi/danger-swift-shoki.git",
         "state": {
-          "branch": "feature/initial",
-          "revision": "2a0004a38af02e6970e97ed1d4b73928d2a67a18",
-          "version": null
+          "branch": null,
+          "revision": "df2d9c8321862f83ab10741c5fb5d89bda4ed7f4",
+          "version": "0.1.0"
         }
       },
       {
