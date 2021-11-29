@@ -19,11 +19,25 @@ public struct GitFlowCheckConfiguration {
         case yes(path: String, keyword: String)
     }
     
-    public var acceptsMergeCommitsInFeaturePRs: Bool = false
-    public var recommendedMaxDiffAmountInFeaturePRs: Int = 300
-    public var suggestsChangeLogUpdate: ChangeLogUpdateRequirement = .yes(path: "CHANGELOG.md")
-    public var requiresVersionModificationInReleasePRs: VersionUpdateRequirement = .no
+    public var acceptsMergeCommitsInFeaturePRs: Bool
+    public var recommendedMaxDiffAmountInFeaturePRs: Int
+    public var suggestsChangeLogUpdate: ChangeLogUpdateRequirement
+    public var requiresVersionModificationInReleasePRs: VersionUpdateRequirement
     public var ticketAddressResolver: ((String) -> String)?
+    
+    public init(
+        acceptsMergeCommitsInFeaturePRs: Bool = false,
+        recommendedMaxDiffAmountInFeaturePRs: Int = 300,
+        suggestsChangeLogUpdate: ChangeLogUpdateRequirement = .yes(path: "CHANGELOG.md"),
+        requiresVersionModificationInReleasePRs: VersionUpdateRequirement = .no,
+        ticketAddressResolver: ((String) -> String)? = nil
+    ) {
+        self.acceptsMergeCommitsInFeaturePRs = acceptsMergeCommitsInFeaturePRs
+        self.recommendedMaxDiffAmountInFeaturePRs = recommendedMaxDiffAmountInFeaturePRs
+        self.suggestsChangeLogUpdate = suggestsChangeLogUpdate
+        self.requiresVersionModificationInReleasePRs = requiresVersionModificationInReleasePRs
+        self.ticketAddressResolver = ticketAddressResolver
+    }
     
     public static var `default`: GitFlowCheckConfiguration {
         .init()
