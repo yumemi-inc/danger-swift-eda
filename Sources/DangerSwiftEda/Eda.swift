@@ -110,7 +110,7 @@ extension Eda {
 // MARK: - Eda Properties for PR state display
 extension Eda {
     
-    var modifiedLines: Int {
+    private var modifiedLines: Int {
         additionLines + deletionLines
     }
     
