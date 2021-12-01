@@ -8,7 +8,7 @@ A danger-swift plug-in to check if the PR matches a specific workflow (e.g. Git-
 
 - Add dependency package to your `Package.swift` file which you import danger-swift
 
-    ```
+    ```swift
     // swift-tools-version:5.5
     ...
     let package = Package(
@@ -25,7 +25,7 @@ A danger-swift plug-in to check if the PR matches a specific workflow (e.g. Git-
 
 - Add the correct import to your `Dangerfile.swift` file
 
-    ```
+    ```swift
     import DangerSwiftEda
     ```
 
@@ -33,7 +33,7 @@ A danger-swift plug-in to check if the PR matches a specific workflow (e.g. Git-
 
 - Just add the dependency import to your `Dangerfile.swift` file like this:
 
-    ```
+    ```swift
     import DangerSwiftEda // package: https://github.com/yumemi-inc/danger-swift-eda.git
     ```
 
@@ -41,7 +41,7 @@ A danger-swift plug-in to check if the PR matches a specific workflow (e.g. Git-
 
 - Setup a configuration based on the workflow you'd like to perform (**currently only Git-Flow supported**)
 
-    ```
+    ```swift
     let configuration = GitFlowCheckConfiguration(
         // ...
     )
@@ -51,7 +51,7 @@ A danger-swift plug-in to check if the PR matches a specific workflow (e.g. Git-
     
 - Perform the workflow check with `eda.checkPR` method which is available for `DangerDSL` instances
 
-    ```
+    ```swift
     danger.eda.ckeckPR(workflow: .gitFlow(configuration)) // Assume you have initialized `danger` by code like `let danger = Danger()`
     ```
 
