@@ -75,6 +75,92 @@ final class EdaTests: XCTestCase {
         
     }
     
+    func test_checkBaseBranch() {
+        
+        XCTContext.runActivity(named: "Valid Base Branch Check") { _ in
+            let edaResolver = EdaResolver(baseBranch: .makeMain())
+            let eda = edaResolver.makeEda()
+            var result = CheckResult.dummy()
+            precondition(result.warningsCount == 0)
+            precondition(result.errorsCount == 0)
+            precondition(result.markdownMessage == "")
+            
+            eda.checkBaseBranch(expected: [.main], into: &result)
+            XCTAssertEqual(result.warningsCount, 0)
+            XCTAssertEqual(result.errorsCount, 0)
+            XCTAssertEqual(result.markdownMessage, """
+                Checking Item | Result
+                | ---| --- |
+                Base Branch Check | :tada:
+                """)
+        }
+        
+        XCTContext.runActivity(named: "Invalid Base Branch Check") { _ in
+            let edaResolver = EdaResolver(baseBranch: .makeMain())
+            let eda = edaResolver.makeEda()
+            var result = CheckResult.dummy()
+            precondition(result.warningsCount == 0)
+            precondition(result.errorsCount == 0)
+            precondition(result.markdownMessage == "")
+            
+            eda.checkBaseBranch(expected: [.develop], into: &result)
+            XCTAssertEqual(result.warningsCount, 0)
+            XCTAssertEqual(result.errorsCount, 1)
+            XCTAssertEqual(result.markdownMessage, """
+                Checking Item | Result
+                | ---| --- |
+                Base Branch Check | :no_good:
+                """)
+        }
+        
+    }
+    
+    func test_checkNoMergeCommitsIncluded() {
+        
+        XCTContext.runActivity(named: "Valid Commits Check") { _ in
+            let edaResolver = EdaResolver(commits: [
+                .dummy(sha: "", author: .dummy(name: "", email: "", date: ""), committer: .dummy(name: "", email: "", date: ""), message: "", parents: ["1"], url: nil),
+                .dummy(sha: "", author: .dummy(name: "", email: "", date: ""), committer: .dummy(name: "", email: "", date: ""), message: "", parents: ["A"], url: nil),
+            ])
+            let eda = edaResolver.makeEda()
+            var result = CheckResult.dummy()
+            precondition(result.warningsCount == 0)
+            precondition(result.errorsCount == 0)
+            precondition(result.markdownMessage == "")
+            
+            eda.checkNoMergeCommitsIncluded(into: &result)
+            XCTAssertEqual(result.warningsCount, 0)
+            XCTAssertEqual(result.errorsCount, 0)
+            XCTAssertEqual(result.markdownMessage, """
+                Checking Item | Result
+                | ---| --- |
+                Merge Commit Non-Existence Check | :tada:
+                """)
+        }
+        
+        XCTContext.runActivity(named: "Invalid Commits Check") { _ in
+            let edaResolver = EdaResolver(commits: [
+                .dummy(sha: "", author: .dummy(name: "", email: "", date: ""), committer: .dummy(name: "", email: "", date: ""), message: "", parents: ["1"], url: nil),
+                .dummy(sha: "", author: .dummy(name: "", email: "", date: ""), committer: .dummy(name: "", email: "", date: ""), message: "", parents: ["A", "B"], url: nil),
+            ])
+            let eda = edaResolver.makeEda()
+            var result = CheckResult.dummy()
+            precondition(result.warningsCount == 0)
+            precondition(result.errorsCount == 0)
+            precondition(result.markdownMessage == "")
+            
+            eda.checkNoMergeCommitsIncluded(into: &result)
+            XCTAssertEqual(result.warningsCount, 0)
+            XCTAssertEqual(result.errorsCount, 1)
+            XCTAssertEqual(result.markdownMessage, """
+                Checking Item | Result
+                | ---| --- |
+                Merge Commit Non-Existence Check | :no_good:
+                """)
+        }
+        
+    }
+    
 }
 
 private extension Git.Commit.Author {
@@ -140,6 +226,16 @@ private extension Shoki {
             markdownExecutor: { _ in },
             messageExecutor: { [unowned container] in container.string = $0 }
         )
+        
+    }
+    
+}
+
+private extension CheckResult {
+    
+    static func dummy(title: String = "Test") -> CheckResult {
+        
+        .init(title: title)
         
     }
     
