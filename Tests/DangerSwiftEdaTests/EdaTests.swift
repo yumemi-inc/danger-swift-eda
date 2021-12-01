@@ -14,51 +14,64 @@ import Danger
 
 final class EdaTests: XCTestCase {
     
+    private struct EdaResolver {
+        
+        var headBranch: Branch = .makeDevelop()
+        var baseBranch: Branch = .makeMain()
+        var additionLines: Int = 100
+        var deletionLines: Int = 200
+        var modifiedFiles: [String] = ["abc.efg"]
+        var commits: [Git.Commit] = [
+            .dummy(
+                sha: "asd",
+                author: .dummy(name: "abc", email: "xyz", date: "123"),
+                committer: .dummy(name: "def", email: "opq", date: "456"),
+                message: "qwerty",
+                parents: ["qaz", "wsx"],
+                url: nil
+            )
+        ]
+        
+        var hammerShellCommandContainer: StringContainer = .init()
+        var shokiMessageContainer: StringContainer = .init()
+        var edaMessageContainer: StringContainer = .init()
+        var edaWarningContainer: StringContainer = .init()
+        var edaFailureContainer: StringContainer = .init()
+        
+        func makeEda() -> Eda {
+            .init(
+                headBranchResolver: { headBranch },
+                baseBranchResolver: { baseBranch },
+                additionLinesResolver: { additionLines },
+                deletionLinesResolver: { deletionLines },
+                modifiedFilesResolver: { modifiedFiles },
+                commitsResolver: { commits },
+                hammerResolver: { .dummy(container: hammerShellCommandContainer) },
+                shokiResolver: { .dummy(container: shokiMessageContainer) },
+                messageExecutor: { [unowned container = edaMessageContainer] in container.string = $0 },
+                warnExecutor: { [unowned container = edaWarningContainer] in container.string = $0 },
+                failExecutor: { [unowned container = edaFailureContainer] in container.string = $0 }
+            )
+        }
+        
+    }
+    
     func test_resolvedPropertiesAndExecutions() {
         
-        let author = Git.Commit.Author.dummy(name: "abc", email: "xyz", date: "123")
-        let committer = Git.Commit.Author.dummy(name: "def", email: "opq", date: "456")
-        let commit = Git.Commit.dummy(sha: "asd", author: author, committer: committer, message: "qwerty", parents: ["qaz", "wsx"], url: nil)
-        let hammerShellCommandContainer = StringContainer()
-        let shokiMessageContainer = StringContainer()
-        let edaMessageContainer = StringContainer()
-        let edaWarningContainer = StringContainer()
-        let edaFailureContainer = StringContainer()
+        let edaResolver = EdaResolver()
+        let eda = edaResolver.makeEda()
         
-        let headBranch = Branch.makeDevelop()
-        let baseBranch = Branch.makeMain()
-        let additionLines = 100
-        let deletionLines = 200
-        let modifiedFiles = ["abc.efg"]
-        let commits = [commit]
-        let hammer = Hammer.dummy(container: hammerShellCommandContainer)
-        let shoki = Shoki.dummy(container: shokiMessageContainer)
-        
-        let eda = Eda(
-            headBranchResolver: { headBranch },
-            baseBranchResolver: { baseBranch },
-            additionLinesResolver: { additionLines },
-            deletionLinesResolver: { deletionLines },
-            modifiedFilesResolver: { modifiedFiles },
-            commitsResolver: { commits },
-            hammerResolver: { hammer },
-            shokiResolver: { shoki },
-            messageExecutor: { [unowned container = edaMessageContainer] in container.string = $0 },
-            warnExecutor: { [unowned container = edaWarningContainer] in container.string = $0 },
-            failExecutor: { [unowned container = edaFailureContainer] in container.string = $0 }
-        )
-        
-        XCTAssertEqual(eda.headBranch, headBranch)
-        XCTAssertEqual(eda.baseBranch, baseBranch)
-        XCTAssertEqual(eda.additionLines, additionLines)
-        XCTAssertEqual(eda.deletionLines, deletionLines)
-        XCTAssertEqual(eda.modifiedFiles, modifiedFiles)
-        XCTAssertEqual(eda.commits, commits)
-        XCTAssert(hammer: hammer, container: hammerShellCommandContainer, line: #line)
-        XCTAssert(shoki: shoki, container: shokiMessageContainer, line: #line)
-        XCTAssert(stringExecution: eda.message(_:), container: edaMessageContainer, line: #line)
-        XCTAssert(stringExecution: eda.warn(_:), container: edaWarningContainer, line: #line)
-        XCTAssert(stringExecution: eda.fail(_:), container: edaFailureContainer, line: #line)
+        XCTAssertEqual(eda.headBranch, edaResolver.headBranch)
+        XCTAssertEqual(eda.baseBranch, edaResolver.baseBranch)
+        XCTAssertEqual(eda.additionLines, edaResolver.additionLines)
+        XCTAssertEqual(eda.deletionLines, edaResolver.deletionLines)
+        XCTAssertEqual(eda.modifiedFiles, edaResolver.modifiedFiles)
+        XCTAssertEqual(eda.commits, edaResolver.commits)
+        XCTAssert(hammer: eda.hammer, container: edaResolver.hammerShellCommandContainer, line: #line)
+        XCTAssert(shoki: eda.shoki, container: edaResolver.shokiMessageContainer, line: #line)
+        XCTAssert(stringExecution: eda.message(_:), container: edaResolver.edaMessageContainer, line: #line)
+        XCTAssert(stringExecution: eda.warn(_:), container: edaResolver.edaWarningContainer, line: #line)
+        XCTAssert(stringExecution: eda.fail(_:), container: edaResolver.edaFailureContainer, line: #line)
         
     }
     
