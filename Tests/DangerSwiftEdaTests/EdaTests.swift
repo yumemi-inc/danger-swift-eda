@@ -67,11 +67,11 @@ final class EdaTests: XCTestCase {
         XCTAssertEqual(eda.deletionLines, edaResolver.deletionLines)
         XCTAssertEqual(eda.modifiedFiles, edaResolver.modifiedFiles)
         XCTAssertEqual(eda.commits, edaResolver.commits)
-        XCTAssert(hammer: eda.hammer, container: edaResolver.hammerShellCommandContainer, line: #line)
-        XCTAssert(shoki: eda.shoki, container: edaResolver.shokiMessageContainer, line: #line)
-        XCTAssert(stringExecution: eda.message(_:), container: edaResolver.edaMessageContainer, line: #line)
-        XCTAssert(stringExecution: eda.warn(_:), container: edaResolver.edaWarningContainer, line: #line)
-        XCTAssert(stringExecution: eda.fail(_:), container: edaResolver.edaFailureContainer, line: #line)
+        XCTAssert(hammer: eda.hammer, container: edaResolver.hammerShellCommandContainer)
+        XCTAssert(shoki: eda.shoki, container: edaResolver.shokiMessageContainer)
+        XCTAssert(stringExecution: eda.message(_:), container: edaResolver.edaMessageContainer)
+        XCTAssert(stringExecution: eda.warn(_:), container: edaResolver.edaWarningContainer)
+        XCTAssert(stringExecution: eda.fail(_:), container: edaResolver.edaFailureContainer)
         
     }
     
@@ -243,7 +243,7 @@ private extension CheckResult {
 
 private extension XCTestCase {
     
-    func XCTAssert(hammer: Hammer, container: StringContainer, line: UInt) {
+    func XCTAssert(hammer: Hammer, container: StringContainer, line: UInt = #line) {
         
         container.string = "initial"
         precondition(container.string == "initial")
@@ -253,7 +253,7 @@ private extension XCTestCase {
         
     }
     
-    func XCTAssert(shoki: Shoki, container: StringContainer, line: UInt) {
+    func XCTAssert(shoki: Shoki, container: StringContainer, line: UInt = #line) {
         
         container.string = "initial"
         precondition(container.string == "initial")
@@ -263,7 +263,7 @@ private extension XCTestCase {
         
     }
     
-    func XCTAssert(stringExecution: (String) -> Void, container: StringContainer, line: UInt) {
+    func XCTAssert(stringExecution: (String) -> Void, container: StringContainer, line: UInt = #line) {
         
         container.string = "initial"
         precondition(container.string == "initial")
