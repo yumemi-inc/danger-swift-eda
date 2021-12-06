@@ -16,8 +16,8 @@ final class EdaTests: XCTestCase {
     
     private struct EdaResolver {
         
-        var headBranch: Branch = .makeDevelop()
-        var baseBranch: Branch = .makeMain()
+        var headBranch: Branch = .develop
+        var baseBranch: Branch = .main
         var additionLines: Int = 100
         var deletionLines: Int = 200
         var modifiedFiles: [String] = ["abc.efg"]
@@ -78,14 +78,14 @@ final class EdaTests: XCTestCase {
     func test_checkBaseBranch() {
         
         XCTContext.runActivity(named: "Valid Base Branch Check") { _ in
-            let edaResolver = EdaResolver(baseBranch: .makeMain())
+            let edaResolver = EdaResolver(baseBranch: .main)
             let eda = edaResolver.makeEda()
             var result = CheckResult.dummy()
             precondition(result.warningsCount == 0)
             precondition(result.errorsCount == 0)
             precondition(result.markdownMessage == "")
             
-            eda.checkBaseBranch(expected: [.main], into: &result)
+            eda.checkBaseBranch(validation: { $0 == .main }, into: &result)
             XCTAssertEqual(result.warningsCount, 0)
             XCTAssertEqual(result.errorsCount, 0)
             XCTAssertEqual(result.markdownMessage, """
@@ -96,14 +96,14 @@ final class EdaTests: XCTestCase {
         }
         
         XCTContext.runActivity(named: "Invalid Base Branch Check") { _ in
-            let edaResolver = EdaResolver(baseBranch: .makeMain())
+            let edaResolver = EdaResolver(baseBranch: .main)
             let eda = edaResolver.makeEda()
             var result = CheckResult.dummy()
             precondition(result.warningsCount == 0)
             precondition(result.errorsCount == 0)
             precondition(result.markdownMessage == "")
             
-            eda.checkBaseBranch(expected: [.develop], into: &result)
+            eda.checkBaseBranch(validation: { $0 == .develop }, into: &result)
             XCTAssertEqual(result.warningsCount, 0)
             XCTAssertEqual(result.errorsCount, 1)
             XCTAssertEqual(result.markdownMessage, """
