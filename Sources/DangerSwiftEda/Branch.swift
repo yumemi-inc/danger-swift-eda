@@ -7,83 +7,55 @@
 
 import OctoKit
 
-public struct Branch: Equatable {
-    
-    public enum BranchType: Equatable {
-        case main
-        case develop
-        case feature
-        case release
-        case hotfix
-        case ci
-    }
+public enum Branch: Equatable {
     
     public enum Reference: Equatable {
         case issue(String)
         case ticket(String)
     }
     
-    public let type: BranchType
-    public let reference: Reference?
+    case main
+    case develop
+    case feature(Reference?)
+    case release(Reference?)
+    case hotfix(Reference?)
+    case ci
     
-    init(type: BranchType, reference: Reference?) {
+    public var reference: Reference? {
         
-        switch type {
-        case .main, .develop, .ci:
-            assert(reference == nil)
+        switch self {
+        case .main,
+             .develop,
+             .ci:
+            return nil
             
-        case .feature, .hotfix, .release:
-            break
+        case .feature(let reference),
+             .release(let reference),
+             .hotfix(let reference):
+            return reference
         }
         
-        self.type = type
-        self.reference = reference
-        
-    }
-    
-    static func makeMain() -> Branch {
-        .init(type: .main, reference: nil)
-    }
-    
-    static func makeDevelop() -> Branch {
-        .init(type: .develop, reference: nil)
-    }
-    
-    static func makeFeature(_ reference: Reference?) -> Branch {
-        .init(type: .feature, reference: reference)
-    }
-    
-    static func makeHotfix(_ reference: Reference?) -> Branch {
-        .init(type: .hotfix, reference: reference)
-    }
-    
-    static func makeRelease(_ reference: Reference?) -> Branch {
-        .init(type: .release, reference: reference)
-    }
-    
-    static func makeCI() -> Branch {
-        .init(type: .ci, reference: nil)
     }
     
     public static func parsed(from branchName: String) -> Branch? {
         switch branchName {
         case "main":
-            return .makeMain()
+            return .main
             
         case "develop":
-            return .makeDevelop()
+            return .develop
             
         case let hotfix where hotfix.contains(pattern: #"\bhotfix\b[/-]"#):
-            return .makeHotfix(hotfix.extractingReference())
+            return .hotfix(hotfix.extractingReference())
             
         case let feature where feature.contains(pattern: #"\bfeature\b[/-]"#):
-            return .makeFeature(feature.extractingReference())
+            return .feature(feature.extractingReference())
             
         case let release where release.contains(pattern: #"\brelease\b[/-]"#):
-            return .makeRelease(release.extractingReference())
+            return .release(release.extractingReference())
             
         case let ci where ci.contains(pattern: #"\bci\b[/-]"#):
-            return .makeCI()
+            return .ci
             
         case _:
             return nil

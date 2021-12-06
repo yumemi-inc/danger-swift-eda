@@ -128,7 +128,7 @@ extension Eda {
 extension Eda {
     
     // Check whether base branch is correct or not
-    func checkBaseBranch(expected validBranchTypes: Set<Branch.BranchType>, into result: inout CheckResult) {
+    func checkBaseBranch(validation: (Branch) -> Bool, into result: inout CheckResult) {
         
         let doBaseBranchCheckTitle = "Base Branch Check"
         result.check(doBaseBranchCheckTitle) {
@@ -138,7 +138,7 @@ extension Eda {
                 return .rejected
             }
             
-            if validBranchTypes.contains(baseBranch.type) {
+            if validation(baseBranch) {
                 return .good
                 
             } else {
@@ -245,7 +245,7 @@ extension Eda {
         
         var result = CheckResult(title: "CI Service PR Check")
         
-        checkBaseBranch(expected: [.develop], into: &result)
+        checkBaseBranch(validation: { $0 == .develop }, into: &result)
         
         // CI auto-generated PRs should not contain any merge commits at first place.
         checkNoMergeCommitsIncluded(into: &result)
@@ -260,7 +260,7 @@ extension Eda {
         
         var result = CheckResult(title: "Feature PR Check")
         
-        checkBaseBranch(expected: [.develop], into: &result)
+        checkBaseBranch(validation: { $0 == .develop }, into: &result)
         
         if !configuration.acceptsMergeCommitsInFeaturePRs {
             checkNoMergeCommitsIncluded(into: &result)
@@ -281,8 +281,8 @@ extension Eda {
         var result = CheckResult(title: "Release PR Check")
         
         // Release PRs should be merged both to main and develop branch
-        checkBaseBranch(expected: [.main, .develop], into: &result)
-        switch baseBranch?.type {
+        checkBaseBranch(validation: { $0 == .main || $0 == .develop }, into: &result)
+        switch baseBranch {
         case .main:
             result.askReviewer(to: "Please make sure you've also created another PR to develop branch")
             
@@ -293,7 +293,7 @@ extension Eda {
             break
         }
         
-        if baseBranch?.type == .develop {
+        if baseBranch == .develop {
             // If it's merging to develop branch, there should be no merge commits in the PR
             checkNoMergeCommitsIncluded(into: &result)
             
@@ -316,8 +316,8 @@ extension Eda {
         var result = CheckResult(title: "HotFix PR Check")
         
         // HotFix PRs should be merged both to main and develop branch
-        checkBaseBranch(expected: [.main, .develop], into: &result)
-        switch baseBranch?.type {
+        checkBaseBranch(validation: { $0 == .main || $0 == .develop }, into: &result)
+        switch baseBranch {
         case .main:
             result.askReviewer(to: "Please make sure you've also created another PR to develop branch")
             
@@ -368,8 +368,8 @@ extension Eda {
             }
         }
         
-        let checkResult = try { (type: Branch.BranchType) throws -> CheckResult in
-            switch type {
+        let checkResult = try { (branch: Branch) throws -> CheckResult in
+            switch branch {
             case .ci:
                 return doCIServicePRCheck()
                 
@@ -385,7 +385,7 @@ extension Eda {
             case .main, .develop:
                 throw PRWorkflowError.invalidBranchType
             }
-        }(headBranch.type)
+        }(headBranch)
         
         shoki.report(checkResult)
         
