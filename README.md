@@ -1,2 +1,3 @@
 # danger-swift-eda
-DangerSwift用ブランチ運用チェックプラグイン
+
+A danger-swift plug-in to check if the PR matches a specific workflow (e.g. Git-Flow) 
