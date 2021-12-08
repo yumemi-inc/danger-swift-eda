@@ -1,6 +1,6 @@
 # danger-swift-eda
 
-A danger-swift plug-in to check if the PR matches a specific workflow (e.g. Git-Flow) 
+A [danger-swift](https://github.com/danger/swift) plug-in to check if the PR matches a specific workflow (e.g. Git-Flow) 
 
 ## Install DangerSwiftEda
 
