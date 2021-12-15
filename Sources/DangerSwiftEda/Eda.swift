@@ -128,38 +128,35 @@ extension Eda {
 extension Eda {
     
     // Check whether base branch is correct or not
-    func checkBaseBranch(validation: (Branch) -> Bool, into result: inout CheckResult) {
+    func checkBaseBranch(validation: (Branch) -> Bool, into report: inout Report) {
         
         let doBaseBranchCheckTitle = "Base Branch Check"
-        result.check(doBaseBranchCheckTitle) {
+        shoki.check(doBaseBranchCheckTitle, into: &report) {
             guard let baseBranch = baseBranch else {
                 assertionFailure("Failed to get base branch")
-                fail("Invalid base branch")
-                return .rejected
+                return .rejected(failureMessage: "Invalid base branch")
             }
             
             if validation(baseBranch) {
                 return .good
                 
             } else {
-                fail("Invalid base branch")
-                return .rejected
+                return .rejected(failureMessage: "Invalid base branch")
             }
         }
         
     }
     
     // Check whether the PR contains merge commits or not
-    func checkNoMergeCommitsIncluded(into result: inout CheckResult) {
+    func checkNoMergeCommitsIncluded(into report: inout Report) {
         
         let doNoMergeCommitsCheckTitle = "Merge Commit Non-Existence Check"
-        result.check(doNoMergeCommitsCheckTitle) {
+        shoki.check(doNoMergeCommitsCheckTitle, into: &report) {
             if commits.allSatisfy({ !$0.isMergeCommit }) {
                 return .good
                 
             } else {
-                fail("Don't include any merge commits in this PR. Please consider rebasing if needed.")
-                return .rejected
+                return .rejected(failureMessage: "Don't include any merge commits in this PR. Please consider rebasing if needed.")
 
             }
         }
@@ -167,72 +164,68 @@ extension Eda {
     }
     
     // Check whether the PR volume is less than a given number
-    func checkDiffAmount(lessThan maxAmountOfModifiedLines: Int, into result: inout CheckResult) {
+    func checkDiffAmount(lessThan maxAmountOfModifiedLines: Int, into report: inout Report) {
         
         let doDiffAmountCheckTitle = "Diff Volume Check"
-        result.check(doDiffAmountCheckTitle) {
+        shoki.check(doDiffAmountCheckTitle, into: &report) {
             if modifiedLines < maxAmountOfModifiedLines {
                 return .good
                 
             } else {
-                warn("There's too much diff. Please make PRs smaller.")
-                return .acceptable
+                return .acceptable(warningMessage: "There's too much diff. Please make PRs smaller.")
             }
         }
         
     }
     
     // Check whether ChangeLog has been modified or not
-    func checkChangeLogModification(at filePath: String, into result: inout CheckResult) {
+    func checkChangeLogModification(at filePath: String, into report: inout Report) {
         
         let doChangeLogModificationCheckTitle = "ChangeLog Modification Check"
         let hasChangeLogBeenModified = hasModifiedFile(at: filePath)
         
-        result.check(doChangeLogModificationCheckTitle) {
+        shoki.check(doChangeLogModificationCheckTitle, into: &report) {
             if hasChangeLogBeenModified {
                 return .good
                 
             } else {
-                warn("This PR doesn't contain any modifications in \(filePath). Please consider to update the ChangeLog.")
-                return .acceptable
+                return .acceptable(warningMessage: "This PR doesn't contain any modifications in \(filePath). Please consider to update the ChangeLog.")
             }
         }
         
     }
     
     // Check whether Version has been modified or not
-    func checkVersionModification(at filePath: String, by keyword: String, into result: inout CheckResult) {
+    func checkVersionModification(at filePath: String, by keyword: String, into report: inout Report) {
         
         let hasMarketingVersionBeenModified = hasModifiedContent(keyword, in: filePath)
         let doVersionModificationCheckTitle = "Version Modification Check"
-        result.check(doVersionModificationCheckTitle) {
+        shoki.check(doVersionModificationCheckTitle, into: &report) {
             if hasMarketingVersionBeenModified {
-                warn("Please check whether the version modification is correct or not.")
-                return .acceptable
+                return .acceptable(warningMessage: "Please check whether the version modification is correct or not.")
                 
             } else {
-                fail("This PR doesn't contain any version modification, which is required.")
-                return .rejected
+                return .rejected(failureMessage: "This PR doesn't contain any version modification, which is required.")
             }
         }
         
         if hasMarketingVersionBeenModified {
-            result.askReviewer(to: doVersionModificationCheckTitle)
+            shoki.askReviewer(to: doVersionModificationCheckTitle, into: &report)
         }
     }
     
     // Ask reviewers to check whether CI auto generated diff is valid or not
-    func checkCIAutoPRModification(into result: inout CheckResult) {
+    func checkCIAutoPRModification(into report: inout Report) {
         
-        result.askReviewer(to: "Check whether CI's auto-generated PR is valid or not")
+        shoki.askReviewer(to: "Check whether CI's auto-generated PR is valid or not", into: &report)
         warn("This PR is auto-generated by CI service. Please check if the diff is valid or not.")
         
     }
     
     // Ask reviewers to check whether all required tasks are closed
-    func checkRemainedTasksState(into result: inout CheckResult) {
+    func checkRemainedTasksState(into report: inout Report) {
         
-        result.askReviewer(to: "Remained Task Check")
+        shoki.askReviewer(to: "Remained Task Check", into: &report)
         warn("Please check whether all required tickets and issues are closed or not.")
         
     }
@@ -241,53 +234,53 @@ extension Eda {
 // MARK: - Eda Methods for each workflow of PRs
 extension Eda {
     
-    func doCIServicePRCheck() -> CheckResult {
+    func doCIServicePRCheck() -> Report {
         
-        var result = CheckResult(title: "CI Service PR Check")
+        var report = shoki.makeInitialReport(title: "CI Service PR Check")
         
-        checkBaseBranch(validation: { $0 == .develop }, into: &result)
+        checkBaseBranch(validation: { $0 == .develop }, into: &report)
         
         // CI auto-generated PRs should not contain any merge commits at first place.
-        checkNoMergeCommitsIncluded(into: &result)
+        checkNoMergeCommitsIncluded(into: &report)
         
-        checkCIAutoPRModification(into: &result)
+        checkCIAutoPRModification(into: &report)
         
-        return result
+        return report
         
     }
     
-    func doFeaturePRCheck(configuration: GitFlowCheckConfiguration) -> CheckResult {
+    func doFeaturePRCheck(configuration: GitFlowCheckConfiguration) -> Report {
         
-        var result = CheckResult(title: "Feature PR Check")
+        var report = shoki.makeInitialReport(title: "Feature PR Check")
         
-        checkBaseBranch(validation: { $0 == .develop }, into: &result)
+        checkBaseBranch(validation: { $0 == .develop }, into: &report)
         
         if !configuration.acceptsMergeCommitsInFeaturePRs {
-            checkNoMergeCommitsIncluded(into: &result)
+            checkNoMergeCommitsIncluded(into: &report)
         }
         
-        checkDiffAmount(lessThan: configuration.recommendedMaxDiffAmountInFeaturePRs, into: &result)
+        checkDiffAmount(lessThan: configuration.recommendedMaxDiffAmountInFeaturePRs, into: &report)
         
         if case .yes(path: let filePath) = configuration.suggestsChangeLogUpdate {
-            checkChangeLogModification(at: filePath, into: &result)
+            checkChangeLogModification(at: filePath, into: &report)
         }
         
-        return result
+        return report
         
     }
     
-    func doReleasePRCheck(configuration: GitFlowCheckConfiguration) -> CheckResult {
+    func doReleasePRCheck(configuration: GitFlowCheckConfiguration) -> Report {
         
-        var result = CheckResult(title: "Release PR Check")
+        var report = shoki.makeInitialReport(title: "Release PR Check")
         
         // Release PRs should be merged both to main and develop branch
-        checkBaseBranch(validation: { $0 == .main || $0 == .develop }, into: &result)
+        checkBaseBranch(validation: { $0 == .main || $0 == .develop }, into: &report)
         switch baseBranch {
         case .main:
-            result.askReviewer(to: "Please make sure you've also created another PR to develop branch")
+            shoki.askReviewer(to: "Please make sure you've also created another PR to develop branch", into: &report)
             
         case .develop:
-            result.askReviewer(to: "Please make sure you've also created another PR to main branch")
+            shoki.askReviewer(to: "Please make sure you've also created another PR to main branch", into: &report)
             
         default:
             break
@@ -295,49 +288,49 @@ extension Eda {
         
         if baseBranch == .develop {
             // If it's merging to develop branch, there should be no merge commits in the PR
-            checkNoMergeCommitsIncluded(into: &result)
+            checkNoMergeCommitsIncluded(into: &report)
             
             // If it's merging to develop branch, since there should be only version related modifications, diff volume should be less than 100 lines
-            checkDiffAmount(lessThan: 100, into: &result)
+            checkDiffAmount(lessThan: 100, into: &report)
         }
         
-        checkRemainedTasksState(into: &result)
+        checkRemainedTasksState(into: &report)
         
         if case .yes(let filePath, let keyword) = configuration.requiresVersionModificationInReleasePRs {
-            checkVersionModification(at: filePath, by: keyword, into: &result)
+            checkVersionModification(at: filePath, by: keyword, into: &report)
         }
         
-        return result
+        return report
         
     }
     
-    func doHotFixPRCheck(configuration: GitFlowCheckConfiguration) -> CheckResult {
+    func doHotFixPRCheck(configuration: GitFlowCheckConfiguration) -> Report {
         
-        var result = CheckResult(title: "HotFix PR Check")
+        var report = shoki.makeInitialReport(title: "HotFix PR Check")
         
         // HotFix PRs should be merged both to main and develop branch
-        checkBaseBranch(validation: { $0 == .main || $0 == .develop }, into: &result)
+        checkBaseBranch(validation: { $0 == .main || $0 == .develop }, into: &report)
         switch baseBranch {
         case .main:
-            result.askReviewer(to: "Please make sure you've also created another PR to develop branch")
+            shoki.askReviewer(to: "Please make sure you've also created another PR to develop branch", into: &report)
             
         case .develop:
-            result.askReviewer(to: "Please make sure you've also created another PR to main branch")
+            shoki.askReviewer(to: "Please make sure you've also created another PR to main branch", into: &report)
             
         default:
             break
         }
         
         // HotFix PRs should not contain any merge commits at first place.
-        checkNoMergeCommitsIncluded(into: &result)
+        checkNoMergeCommitsIncluded(into: &report)
         
-        checkDiffAmount(lessThan: configuration.recommendedMaxDiffAmountInFeaturePRs, into: &result)
+        checkDiffAmount(lessThan: configuration.recommendedMaxDiffAmountInFeaturePRs, into: &report)
         
         if case .yes(path: let filePath) = configuration.suggestsChangeLogUpdate {
-            checkChangeLogModification(at: filePath, into: &result)
+            checkChangeLogModification(at: filePath, into: &report)
         }
         
-        return result
+        return report
         
     }
     
@@ -368,7 +361,7 @@ extension Eda {
             }
         }
         
-        let checkResult = try { (branch: Branch) throws -> CheckResult in
+        let report = try { (branch: Branch) throws -> Report in
             switch branch {
             case .ci:
                 return doCIServicePRCheck()
@@ -387,7 +380,7 @@ extension Eda {
             }
         }(headBranch)
         
-        shoki.report(checkResult)
+        shoki.report(report)
         
     }
     

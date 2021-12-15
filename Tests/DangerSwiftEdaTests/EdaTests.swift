@@ -8,8 +8,8 @@
 import Foundation
 import XCTest
 import Danger
-@testable import DangerSwiftHammer
-@testable import DangerSwiftShoki
+import DangerSwiftHammer
+import DangerSwiftShoki
 @testable import DangerSwiftEda
 
 final class EdaTests: XCTestCase {
@@ -39,7 +39,14 @@ final class EdaTests: XCTestCase {
         var edaFailureContainer: StringContainer = .init()
         
         func makeEda() -> Eda {
-            .init(
+            
+            func messageExecutor(container: StringContainer) -> (String) -> Void {
+                { [unowned container] string in
+                    container.string = string
+                }
+            }
+            
+            return .init(
                 headBranchResolver: { headBranch },
                 baseBranchResolver: { baseBranch },
                 additionLinesResolver: { additionLines },
@@ -48,10 +55,11 @@ final class EdaTests: XCTestCase {
                 commitsResolver: { commits },
                 hammerResolver: { .dummy(container: hammerShellCommandContainer) },
                 shokiResolver: { .dummy(container: shokiMessageContainer) },
-                messageExecutor: { [unowned container = edaMessageContainer] in container.string = $0 },
-                warnExecutor: { [unowned container = edaWarningContainer] in container.string = $0 },
-                failExecutor: { [unowned container = edaFailureContainer] in container.string = $0 }
+                messageExecutor: messageExecutor(container: edaMessageContainer),
+                warnExecutor: messageExecutor(container: edaWarningContainer),
+                failExecutor: messageExecutor(container: edaFailureContainer)
             )
+            
         }
         
     }
@@ -80,37 +88,25 @@ final class EdaTests: XCTestCase {
         XCTContext.runActivity(named: "Valid Base Branch Check") { _ in
             let edaResolver = EdaResolver(baseBranch: .main)
             let eda = edaResolver.makeEda()
-            var result = CheckResult.dummy()
-            precondition(result.warningsCount == 0)
-            precondition(result.errorsCount == 0)
-            precondition(result.markdownMessage == "")
+            let shoki = eda.shoki
+            var edaReport = shoki.dummyReport()
+            var manualReport = edaReport
             
-            eda.checkBaseBranch(validation: { $0 == .main }, into: &result)
-            XCTAssertEqual(result.warningsCount, 0)
-            XCTAssertEqual(result.errorsCount, 0)
-            XCTAssertEqual(result.markdownMessage, """
-                Checking Item | Result
-                | ---| --- |
-                Base Branch Check | :tada:
-                """)
+            eda.checkBaseBranch(validation: { $0 == .main }, into: &edaReport)
+            shoki.check("Base Branch Check", into: &manualReport, execution: { .good })
+            XCTAssertEqual(edaReport, manualReport)
         }
         
         XCTContext.runActivity(named: "Invalid Base Branch Check") { _ in
             let edaResolver = EdaResolver(baseBranch: .main)
             let eda = edaResolver.makeEda()
-            var result = CheckResult.dummy()
-            precondition(result.warningsCount == 0)
-            precondition(result.errorsCount == 0)
-            precondition(result.markdownMessage == "")
+            let shoki = eda.shoki
+            var edaReport = shoki.dummyReport()
+            var manualReport = edaReport
             
-            eda.checkBaseBranch(validation: { $0 == .develop }, into: &result)
-            XCTAssertEqual(result.warningsCount, 0)
-            XCTAssertEqual(result.errorsCount, 1)
-            XCTAssertEqual(result.markdownMessage, """
-                Checking Item | Result
-                | ---| --- |
-                Base Branch Check | :no_good:
-                """)
+            eda.checkBaseBranch(validation: { $0 == .develop }, into: &edaReport)
+            shoki.check("Base Branch Check", into: &manualReport, execution: { .rejected(failureMessage: "Invalid base branch") })
+            XCTAssertEqual(edaReport, manualReport)
         }
         
     }
@@ -123,19 +119,13 @@ final class EdaTests: XCTestCase {
                 .dummy(sha: "", author: .dummy(name: "", email: "", date: ""), committer: .dummy(name: "", email: "", date: ""), message: "", parents: ["A"], url: nil),
             ])
             let eda = edaResolver.makeEda()
-            var result = CheckResult.dummy()
-            precondition(result.warningsCount == 0)
-            precondition(result.errorsCount == 0)
-            precondition(result.markdownMessage == "")
+            let shoki = eda.shoki
+            var edaReport = shoki.dummyReport()
+            var manualReport = edaReport
             
-            eda.checkNoMergeCommitsIncluded(into: &result)
-            XCTAssertEqual(result.warningsCount, 0)
-            XCTAssertEqual(result.errorsCount, 0)
-            XCTAssertEqual(result.markdownMessage, """
-                Checking Item | Result
-                | ---| --- |
-                Merge Commit Non-Existence Check | :tada:
-                """)
+            eda.checkNoMergeCommitsIncluded(into: &edaReport)
+            shoki.check("Merge Commit Non-Existence Check", into: &manualReport, execution: { .good })
+            XCTAssertEqual(edaReport, manualReport)
         }
         
         XCTContext.runActivity(named: "Invalid Commits Check") { _ in
@@ -144,19 +134,13 @@ final class EdaTests: XCTestCase {
                 .dummy(sha: "", author: .dummy(name: "", email: "", date: ""), committer: .dummy(name: "", email: "", date: ""), message: "", parents: ["A", "B"], url: nil),
             ])
             let eda = edaResolver.makeEda()
-            var result = CheckResult.dummy()
-            precondition(result.warningsCount == 0)
-            precondition(result.errorsCount == 0)
-            precondition(result.markdownMessage == "")
+            let shoki = eda.shoki
+            var edaReport = shoki.dummyReport()
+            var manualReport = edaReport
             
-            eda.checkNoMergeCommitsIncluded(into: &result)
-            XCTAssertEqual(result.warningsCount, 0)
-            XCTAssertEqual(result.errorsCount, 1)
-            XCTAssertEqual(result.markdownMessage, """
-                Checking Item | Result
-                | ---| --- |
-                Merge Commit Non-Existence Check | :no_good:
-                """)
+            eda.checkNoMergeCommitsIncluded(into: &edaReport)
+            shoki.check("Merge Commit Non-Existence Check", into: &manualReport, execution: { .rejected(failureMessage: "Don't include any merge commits in this PR. Please consider rebasing if needed.") })
+            XCTAssertEqual(edaReport, manualReport)
         }
         
     }
@@ -208,11 +192,11 @@ private extension Git.Commit {
 
 private extension Hammer {
     
-    static func dummy(container: StringContainer) -> Hammer {
+    static func dummy(container: XCTestCase.StringContainer) -> Hammer {
         
         .init(
-            baseBranchResolver: { "" },
-            shellCommandExecutor: { [unowned container] in container.string = $0; return "executed" })
+            baseBranch: { "" },
+            shellCommand: { [unowned container] in container.string = $0; return "executed" })
         
     }
     
@@ -220,67 +204,21 @@ private extension Hammer {
 
 private extension Shoki {
     
-    static func dummy(container: StringContainer) -> Shoki {
+    static func dummy(container: XCTestCase.StringContainer) -> Shoki {
         
         .init(
-            markdownExecutor: { _ in },
-            messageExecutor: { [unowned container] in container.string = $0 }
+            markdown: { _ in XCTFail() },
+            message: { [unowned container] in container.string = $0 },
+            warning: { _ in XCTFail() },
+            failure: { _ in XCTFail() }
         )
         
     }
     
-}
-
-private extension CheckResult {
-    
-    static func dummy(title: String = "Test") -> CheckResult {
+    func dummyReport(title: String = "Test") -> Report {
         
-        .init(title: title)
+        makeInitialReport(title: title)
         
-    }
-    
-}
-
-private extension XCTestCase {
-    
-    func XCTAssert(hammer: Hammer, container: StringContainer, line: UInt = #line) {
-        
-        container.string = "initial"
-        precondition(container.string == "initial")
-        
-        XCTAssertEqual(hammer.shellCommandExecutor("new"), "executed", line: line)
-        XCTAssertEqual(container.string, "new")
-        
-    }
-    
-    func XCTAssert(shoki: Shoki, container: StringContainer, line: UInt = #line) {
-        
-        container.string = "initial"
-        precondition(container.string == "initial")
-        
-        shoki.message("new")
-        XCTAssertEqual(container.string, "new", line: line)
-        
-    }
-    
-    func XCTAssert(stringExecution: (String) -> Void, container: StringContainer, line: UInt = #line) {
-        
-        container.string = "initial"
-        precondition(container.string == "initial")
-        
-        stringExecution("new")
-        XCTAssertEqual(container.string, "new", line: line)
-        
-    }
-    
-}
-
-private final class StringContainer {
-    
-    var string: String
-    
-    init(string: String = "") {
-        self.string = string
     }
     
 }
