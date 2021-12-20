@@ -3,7 +3,7 @@
     "pins": [
       {
         "package": "DangerSwiftShoki",
-        "repositoryURL": "git@github.com:yumemi/danger-swift-shoki.git",
+        "repositoryURL": "https://github.com/yumemi-inc/danger-swift-shoki/",
         "state": {
           "branch": null,
           "revision": "e0941e5a76003f8616689c127717c49de3210780",
