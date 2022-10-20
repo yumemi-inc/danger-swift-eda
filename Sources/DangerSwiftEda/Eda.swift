@@ -397,8 +397,13 @@ extension Eda {
         }
         
     }
-    
+
+    @available(*, deprecated, renamed: "checkPR")
     public func ckeckPR(workflow: PRWorkflow) {
+        checkPR(workflow: workflow)
+    }
+
+    public func checkPR(workflow: PRWorkflow) {
         
         switch workflow {
         case .gitFlow(let configuration):

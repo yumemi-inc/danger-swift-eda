@@ -52,7 +52,7 @@ A [danger-swift](https://github.com/danger/swift) plug-in to check if the PR mat
 - Perform the workflow check with `eda.checkPR` method which is available for `DangerDSL` instances
 
     ```swift
-    danger.eda.ckeckPR(workflow: .gitFlow(configuration)) // Assume you have initialized `danger` by code like `let danger = Danger()`
+    danger.eda.checkPR(workflow: .gitFlow(configuration)) // Assume you have initialized `danger` by code like `let danger = Danger()`
     ```
 
 ## Preview
