@@ -1,44 +1,56 @@
 //
-//  Branch.swift
+//  GitFlow.swift
+//  
 //
-//
-//  Created by 史 翔新 on 2020/07/11.
+//  Created by 史 翔新 on 2021/11/15.
 //
 
-import OctoKit
+import Foundation
+import DangerSwiftShoki
 
-public enum Branch: Equatable {
+// MARK: - GitFlow Declaration
+public struct GitFlow {
     
-    public enum Reference: Equatable {
-        case issue(String)
-        case ticket(String)
-    }
-    
-    case main
-    case develop
-    case feature(Reference?)
-    case release(Reference?)
-    case hotfix(Reference?)
-    case ci
-    
-    public var reference: Reference? {
+    public enum Branch: Equatable {
         
-        switch self {
-        case .main,
-             .develop,
-             .ci:
-            return nil
+        public enum Reference: Equatable {
+            case issue(String)
+            case ticket(String)
+        }
+        
+        case main
+        case develop
+        case feature(Reference?)
+        case release(Reference?)
+        case hotfix(Reference?)
+        case ci
+        
+        public var reference: Reference? {
             
-        case .feature(let reference),
-             .release(let reference),
-             .hotfix(let reference):
-            return reference
+            switch self {
+            case .main,
+                 .develop,
+                 .ci:
+                return nil
+                
+            case .feature(let reference),
+                 .release(let reference),
+                 .hotfix(let reference):
+                return reference
+            }
+            
         }
         
     }
     
-    public static func parsed(from branchName: String) -> Branch? {
-        switch branchName {
+}
+
+// MARK: - Convenient Extensions
+extension GitFlow.Branch {
+    
+    public static func defaultParsingMethod(name: String) -> Self? {
+        
+        switch name {
         case "main":
             return .main
             
@@ -67,7 +79,7 @@ public enum Branch: Equatable {
 
 private extension String {
     
-    private func extractingIssue() -> Branch.Reference? {
+    private func extractingIssue() -> GitFlow.Branch.Reference? {
         
         if let issueID = substring(ofPattern: #"\bissue\b[/-](\d+)"#) {
             return .issue(issueID)
@@ -78,7 +90,7 @@ private extension String {
         
     }
     
-    private func extractingTicket() -> Branch.Reference? {
+    private func extractingTicket() -> GitFlow.Branch.Reference? {
         
         if let ticketID = substring(ofPattern: #"\bticket\b[/-](.+)"#) {
             return .ticket(ticketID)
@@ -89,7 +101,7 @@ private extension String {
         
     }
     
-    func extractingReference() -> Branch.Reference? {
+    func extractingReference() -> GitFlow.Branch.Reference? {
         
         return extractingIssue() ?? extractingTicket()
         
