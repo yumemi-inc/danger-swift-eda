@@ -43,6 +43,53 @@ public struct GitFlow {
         
     }
     
+    public struct Configuration {
+        
+        public enum ChangeLogUpdateRequirement {
+            case no
+            case yes(path: String)
+        }
+        
+        public enum VersionUpdateRequirement {
+            case no
+            case yes(path: String, keyword: String)
+        }
+        
+        public var branchParsingMethod: (String) -> GitFlow.Branch?
+        public var acceptsMergeCommitsInFeaturePRs: Bool
+        public var recommendedMaxDiffAmountInFeaturePRs: Int
+        public var suggestsChangeLogUpdate: ChangeLogUpdateRequirement
+        public var requiresVersionModificationInReleasePRs: VersionUpdateRequirement
+        public var ticketAddressResolver: ((String) -> String)?
+        
+        public init(
+            branchParsingMethod: @escaping (String) -> GitFlow.Branch? = GitFlow.Branch.defaultParsingMethod(name:),
+            acceptsMergeCommitsInFeaturePRs: Bool = false,
+            recommendedMaxDiffAmountInFeaturePRs: Int = 300,
+            suggestsChangeLogUpdate: ChangeLogUpdateRequirement = .yes(path: "CHANGELOG.md"),
+            requiresVersionModificationInReleasePRs: VersionUpdateRequirement = .no,
+            ticketAddressResolver: ((String) -> String)? = nil
+        ) {
+            self.branchParsingMethod = branchParsingMethod
+            self.acceptsMergeCommitsInFeaturePRs = acceptsMergeCommitsInFeaturePRs
+            self.recommendedMaxDiffAmountInFeaturePRs = recommendedMaxDiffAmountInFeaturePRs
+            self.suggestsChangeLogUpdate = suggestsChangeLogUpdate
+            self.requiresVersionModificationInReleasePRs = requiresVersionModificationInReleasePRs
+            self.ticketAddressResolver = ticketAddressResolver
+        }
+        
+        public static var `default`: Configuration {
+            .init()
+        }
+        
+    }
+    
+    public var configuration: Configuration
+    
+    public init(configuration: Configuration) {
+        self.configuration = configuration
+    }
+    
 }
 
 // MARK: - Convenient Extensions
