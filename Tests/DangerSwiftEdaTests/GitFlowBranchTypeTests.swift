@@ -1,5 +1,5 @@
 //
-//  BranchTypeTests.swift
+//  GitFlowBranchTypeTests.swift
 //  
 //
 //  Created by 史 翔新 on 2021/11/11.
@@ -8,11 +8,11 @@
 import XCTest
 @testable import DangerSwiftEda
 
-final class BranchTypeTests: XCTestCase {
+final class GitFlowBranchTypeTests: XCTestCase {
     
     func test_parsed() {
         
-        typealias TestCase = (input: String, expected: Branch?)
+        typealias TestCase = (input: String, expected: GitFlow.Branch?)
         let testCases: [TestCase] = [
             
             ("main",                    .main),
@@ -48,7 +48,7 @@ final class BranchTypeTests: XCTestCase {
         ]
         
         for testCase in testCases {
-            XCTAssertEqual(Branch.parsed(from: testCase.input), testCase.expected)
+            XCTAssertEqual(GitFlow.Branch.defaultParsingMethod(name: testCase.input), testCase.expected)
         }
         
     }
