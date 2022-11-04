@@ -7,7 +7,7 @@
 
 import Danger
 
-typealias GitCommit = Git.Commit
+public typealias GitCommit = Git.Commit
 
 extension GitCommit {
     
