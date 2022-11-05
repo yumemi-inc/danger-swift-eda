@@ -12,43 +12,43 @@ final class GitFlowBranchTypeTests: XCTestCase {
     
     func test_parsed() {
         
-        typealias TestCase = (input: String, expected: GitFlow.Branch?)
+        typealias TestCase = (line: UInt, input: String, expected: GitFlow.Branch?)
         let testCases: [TestCase] = [
             
-            ("main",                    .main),
-            ("main/xyz",                nil),
-            ("main/issue/123",          nil),
-            ("main/ticket/ABC-123",     nil),
+            (#line, "main",                    .main),
+            (#line, "main/xyz",                nil),
+            (#line, "main/issue/123",          nil),
+            (#line, "main/ticket/ABC-123",     nil),
             
-            ("develop",                 .develop),
-            ("develop/xyz",             nil),
-            ("develop/issue/123",       nil),
-            ("develop/ticket/ABC-123",  nil),
+            (#line, "develop",                 .develop),
+            (#line, "develop/xyz",             nil),
+            (#line, "develop/issue/123",       nil),
+            (#line, "develop/ticket/ABC-123",  nil),
             
-            ("hotfix",                  nil),
-            ("hotfix/xyz",              .hotfix(nil)),
-            ("hotfix/issue/123",        .hotfix(.issue("123"))),
-            ("hotfix/ticket/ABC-123",   .hotfix(.ticket("ABC-123"))),
+            (#line, "hotfix",                  nil),
+            (#line, "hotfix/xyz",              .hotfix(nil)),
+            (#line, "hotfix/issue/123",        .hotfix(.issue("123"))),
+            (#line, "hotfix/ticket/ABC-123",   .hotfix(.ticket("ABC-123"))),
             
-            ("feature",                 nil),
-            ("feature/xyz",             .feature(nil)),
-            ("feature/issue/123",       .feature(.issue("123"))),
-            ("feature/ticket/ABC-123",  .feature(.ticket("ABC-123"))),
+            (#line, "feature",                 nil),
+            (#line, "feature/xyz",             .feature(nil)),
+            (#line, "feature/issue/123",       .feature(.issue("123"))),
+            (#line, "feature/ticket/ABC-123",  .feature(.ticket("ABC-123"))),
             
-            ("release",                 nil),
-            ("release/xyz",             .release(nil)),
-            ("release/issue/123",       .release(.issue("123"))),
-            ("release/ticket/ABC-123",  .release(.ticket("ABC-123"))),
+            (#line, "release",                 nil),
+            (#line, "release/xyz",             .release(nil)),
+            (#line, "release/issue/123",       .release(.issue("123"))),
+            (#line, "release/ticket/ABC-123",  .release(.ticket("ABC-123"))),
             
-            ("ci",                      nil),
-            ("ci/xyz",                  .ci),
-            ("ci/issue/123",            .ci),
-            ("ci/ticket/ABC-123",       .ci),
+            (#line, "ci",                      nil),
+            (#line, "ci/xyz",                  .ci),
+            (#line, "ci/issue/123",            .ci),
+            (#line, "ci/ticket/ABC-123",       .ci),
             
         ]
         
         for testCase in testCases {
-            XCTAssertEqual(GitFlow.Branch.defaultParsingMethod(name: testCase.input), testCase.expected)
+            XCTAssertEqual(GitFlow.Branch.defaultParsingMethod(name: testCase.input), testCase.expected, line: testCase.line)
         }
         
     }

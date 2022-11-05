@@ -10,18 +10,18 @@ import XCTest
 
 final class StringTests: XCTestCase {
     
-    func test_substring() {
+    func test_matches() {
         
-        typealias TestCase = (input: String, regex: String, expected: String?)
+        typealias TestCase<R: RegexComponent> = (line: UInt, input: String, regex: R, expected: Bool)
         let testCases: [TestCase] = [
-            ("issue/123", #"issue/(\d+)"#, "123"),
-            ("ticket/123", #"issue/(\d+)"#, nil),
-            ("ticket/ABC-123", #"ticket/(.+)"#, "ABC-123"),
+            (#line, "issue/123", #/issue/(\d+)/#, true),
+            (#line, "ticket/123", #/issue/(\d+)/#, false),
+            (#line, "ticket/ABC-123", #/ticket/(.+)/#, true),
         ]
         
         for testCase in testCases {
-            let result = testCase.input.substring(ofPattern: testCase.regex)
-            XCTAssertEqual(result, testCase.expected)
+            let result = testCase.input.matches(testCase.regex)
+            XCTAssertEqual(result, testCase.expected, line: testCase.line)
         }
         
     }
