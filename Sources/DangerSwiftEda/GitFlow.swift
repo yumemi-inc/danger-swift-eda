@@ -355,16 +355,16 @@ extension GitFlow.Branch {
         case "develop":
             return .develop
             
-        case let hotfix where hotfix.contains(pattern: #"\bhotfix\b[/-]"#):
+        case let hotfix where hotfix.matches(#/hotfix[/-].+/#):
             return .hotfix(hotfix.extractingReference())
             
-        case let feature where feature.contains(pattern: #"\bfeature\b[/-]"#):
+        case let feature where feature.matches(#/feature\[/-].+/#):
             return .feature(feature.extractingReference())
             
-        case let release where release.contains(pattern: #"\brelease\b[/-]"#):
+        case let release where release.matches(#/"release[/-].+"/#):
             return .release(release.extractingReference())
             
-        case let ci where ci.contains(pattern: #"\bci\b[/-]"#):
+        case let ci where ci.matches(#/"ci[/-].+"/#):
             return .ci
             
         case _:
@@ -379,8 +379,8 @@ private extension String {
     
     private func extractingIssue() -> GitFlow.Branch.Reference? {
         
-        if let issueID = substring(ofPattern: #"\bissue\b[/-](\d+)"#) {
-            return .issue(issueID)
+        if let match = wholeMatch(of: #/\w+/issue\b[/-](?<issueNumber>\d+)/#) {
+            return .issue(String(match.issueNumber))
             
         } else {
             return nil
@@ -390,8 +390,8 @@ private extension String {
     
     private func extractingTicket() -> GitFlow.Branch.Reference? {
         
-        if let ticketID = substring(ofPattern: #"\bticket\b[/-](.+)"#) {
-            return .ticket(ticketID)
+        if let match = wholeMatch(of: #/\w+/ticket\b[/-](?<ticketID>\d+)/#) {
+            return .ticket(String(match.ticketID))
             
         } else {
             return nil
