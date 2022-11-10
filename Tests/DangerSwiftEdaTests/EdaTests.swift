@@ -1,5 +1,5 @@
 //
-//  EdaTests.swift
+//  GitFlowTests.swift
 //  
 //
 //  Created by 史 翔新 on 2021/11/29.
@@ -11,7 +11,7 @@ import Danger
 import DangerSwiftHammer
 import DangerSwiftShoki
 @testable import DangerSwiftEda
-
+/*
 final class EdaTests: XCTestCase {
     
     private struct EdaResolver {
@@ -222,3 +222,4 @@ private extension Shoki {
     }
     
 }
+*/

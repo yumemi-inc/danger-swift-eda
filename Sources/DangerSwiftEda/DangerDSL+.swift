@@ -11,17 +11,20 @@ extension DangerDSL {
     
     public var eda: Eda {
         .init(
-            headBranchResolver: { .parsed(from: github.pullRequest.head.ref) },
-            baseBranchResolver: { .parsed(from: github.pullRequest.base.ref) },
-            additionLinesResolver: { github.pullRequest.additions ?? 0 },
-            deletionLinesResolver: { github.pullRequest.deletions ?? 0 },
-            modifiedFilesResolver: { git.modifiedFiles },
-            commitsResolver: { git.commits },
-            hammerResolver: { hammer },
-            shokiResolver: { shoki },
-            messageExecutor: { message($0) },
-            warnExecutor: { warn($0) },
-            failExecutor: { fail($0) }
+            prMetaDataResolver: { .init(
+                gitHubInstanceResolver: { github },
+                gitInstanceResolver: { git },
+                hammerResolver: { hammer }
+            )},
+            prUtilityResolver: { .init(
+                initialReportGenerator: shoki.makeInitialReport(title:),
+                checkExecutor: shoki.check(_:into:execution:),
+                todoExecutor: shoki.askReviewer(to:into:),
+                messageExecutor: message(_:),
+                warnExecutor: warn(_:),
+                failExecutor: fail(_:)
+            )},
+            shokiResolver: { shoki }
         )
     }
     
