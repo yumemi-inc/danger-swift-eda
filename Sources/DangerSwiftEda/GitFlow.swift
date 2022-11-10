@@ -355,16 +355,16 @@ extension GitFlow.Branch {
         case "develop":
             return .develop
             
-        case let hotfix where hotfix.contains(pattern: #"\bhotfix\b[/-]"#):
+        case let hotfix where hotfix.isHotFixBranchName:
             return .hotfix(hotfix.extractingReference())
             
-        case let feature where feature.contains(pattern: #"\bfeature\b[/-]"#):
+        case let feature where feature.isFeatureBranchName:
             return .feature(feature.extractingReference())
             
-        case let release where release.contains(pattern: #"\brelease\b[/-]"#):
+        case let release where release.isReleaseBranchName:
             return .release(release.extractingReference())
             
-        case let ci where ci.contains(pattern: #"\bci\b[/-]"#):
+        case let ci where ci.isCIBranchName:
             return .ci
             
         case _:
@@ -379,22 +379,48 @@ private extension String {
     
     private func extractingIssue() -> GitFlow.Branch.Reference? {
         
-        if let issueID = substring(ofPattern: #"\bissue\b[/-](\d+)"#) {
-            return .issue(issueID)
+        if #available(macOS 13, *) {
+            
+            if let match = wholeMatch(of: #/\w+/issue\b[/-](?<issueNumber>\d+)/#) {
+                return .issue(String(match.issueNumber))
+
+            } else {
+                return nil
+            }
             
         } else {
-            return nil
+            
+            if let issueID = substring(ofPattern: #"\bissue\b[/-](\d+)"#) {
+                return .issue(issueID)
+                
+            } else {
+                return nil
+            }
+            
         }
         
     }
     
     private func extractingTicket() -> GitFlow.Branch.Reference? {
         
-        if let ticketID = substring(ofPattern: #"\bticket\b[/-](.+)"#) {
-            return .ticket(ticketID)
+        if #available(macOS 13, *) {
+            
+            if let match = wholeMatch(of: #/\w+/ticket\b[/-](?<ticketID>\d+)/#) {
+                return .ticket(String(match.ticketID))
+
+            } else {
+                return nil
+            }
             
         } else {
-            return nil
+            
+            if let ticketID = substring(ofPattern: #"\bticket\b[/-](.+)"#) {
+                return .ticket(ticketID)
+                
+            } else {
+                return nil
+            }
+            
         }
         
     }
@@ -402,6 +428,50 @@ private extension String {
     func extractingReference() -> GitFlow.Branch.Reference? {
         
         return extractingIssue() ?? extractingTicket()
+        
+    }
+    
+}
+
+private extension String {
+    
+    var isHotFixBranchName: Bool {
+        
+        if #available(macOS 13, *) {
+            return matches(#/hotfix[/-].+/#)
+        } else {
+            return contains(pattern: #"\bhotfix\b[/-]"#)
+        }
+        
+    }
+    
+    var isFeatureBranchName: Bool {
+        
+        if #available(macOS 13, *) {
+            return matches(#/feature[/-].+/#)
+        } else {
+            return contains(pattern: #"\bfeature\b[/-]"#)
+        }
+        
+    }
+    
+    var isReleaseBranchName: Bool {
+        
+        if #available(macOS 13, *) {
+            return matches(#/release[/-].+/#)
+        } else {
+            return contains(pattern: #"\brelease\b[/-]"#)
+        }
+        
+    }
+    
+    var isCIBranchName: Bool {
+        
+        if #available(macOS 13, *) {
+            return matches(#/ci[/-].+/#)
+        } else {
+            return contains(pattern: #"\bci\b[/-]"#)
+        }
         
     }
     

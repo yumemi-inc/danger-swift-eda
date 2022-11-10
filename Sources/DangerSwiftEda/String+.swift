@@ -47,3 +47,14 @@ extension String {
     }
     
 }
+
+extension String {
+    
+    @available(macOS 13, *)
+    func matches<R: RegexComponent>(_ pattern: R) -> Bool {
+        
+        wholeMatch(of: pattern) != nil
+        
+    }
+    
+}
