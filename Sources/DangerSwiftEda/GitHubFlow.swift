@@ -226,6 +226,9 @@ extension GitHubFlow.Branch {
         case "main":
             return .main
             
+        case "ci":
+            return .ci
+            
         case let ci where ci.contains(pattern: #"\bci\b[/-]"#):
             return .ci
             
