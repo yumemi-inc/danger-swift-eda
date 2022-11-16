@@ -32,7 +32,7 @@ public struct Eda {
 // MARK: - Eda Methods for PR Checking
 extension Eda {
     
-    public func checkPR(workflow: PRWorkflow) {
+    public func checkPR<Workflow: PRWorkflow>(workflow: Workflow) {
         
         let metadata = prMetaDataResolver()
         let utility = prUtilityResolver()
