@@ -53,6 +53,11 @@ public struct GitHubFlow {
         self.configuration = configuration
     }
     
+    @available(*, deprecated, renamed: "init(configuration:)")
+    public init(_ configuration: Configuration) {
+        self.init(configuration: configuration)
+    }
+    
 }
 
 // MARK: - Methods for single check items
