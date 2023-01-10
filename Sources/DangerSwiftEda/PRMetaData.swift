@@ -18,35 +18,23 @@ public struct PRMetaData {
     private let gitInstanceResolver: () -> Danger.Git
     private let hammerResolver: () -> Hammer
     
-    // Custom resolvers only used for testing as a mock
-    private let baseBranchNameResolver: (() -> String)?
-    private let headBranchNameResolver: (() -> String)?
+    // Customize for use
+    public static var baseBranchNameResolver: ((Danger.GitHub) -> String)?
+    public static var headBranchNameResolver: ((Danger.GitHub) -> String)?
     
-    private let additionLinesResolver: (() -> Int)?
-    private let deletionLinesResolver: (() -> Int)?
-    private let modifiedFilesResolver: (() -> [String])?
-    private let commitsResolver: (() -> [GitCommit])?
+    public static var additionLinesResolver: ((Danger.GitHub) -> Int)?
+    public static var deletionLinesResolver: ((Danger.GitHub) -> Int)?
+    public static var modifiedFilesResolver: ((Danger.Git) -> [String])?
+    public static var commitsResolver: ((Danger.Git) -> [GitCommit])?
     
     init(
         gitHubInstanceResolver: @escaping () -> Danger.GitHub,
         gitInstanceResolver: @escaping () -> Danger.Git,
-        hammerResolver: @escaping () -> Hammer,
-        baseBranchNameResolver: (() -> String)? = nil,
-        headBranchNameResolver: (() -> String)? = nil,
-        additionLinesResolver: (() -> Int)? = nil,
-        deletionLinesResolver: (() -> Int)? = nil,
-        modifiedFilesResolver: (() -> [String])? = nil,
-        commitsResolver: (() -> [GitCommit])? = nil
+        hammerResolver: @escaping () -> Hammer
     ) {
         self.gitHubInstanceResolver = gitHubInstanceResolver
         self.gitInstanceResolver = gitInstanceResolver
         self.hammerResolver = hammerResolver
-        self.baseBranchNameResolver = baseBranchNameResolver
-        self.headBranchNameResolver = headBranchNameResolver
-        self.additionLinesResolver = additionLinesResolver
-        self.deletionLinesResolver = deletionLinesResolver
-        self.modifiedFilesResolver = modifiedFilesResolver
-        self.commitsResolver = commitsResolver
     }
     
 }
@@ -55,19 +43,19 @@ public struct PRMetaData {
 extension PRMetaData {
     
     public var baseBranchName: String {
-        baseBranchNameResolver?() ?? gitHubInstanceResolver().pullRequest.base.ref
+        Self.baseBranchNameResolver?(gitHubInstanceResolver()) ?? gitHubInstanceResolver().pullRequest.base.ref
     }
     
     public var headBranchName: String {
-        headBranchNameResolver?() ?? gitHubInstanceResolver().pullRequest.head.ref
+        Self.headBranchNameResolver?(gitHubInstanceResolver()) ?? gitHubInstanceResolver().pullRequest.head.ref
     }
     
     public var additionLines: Int {
-        additionLinesResolver?() ?? gitHubInstanceResolver().pullRequest.additions ?? 0
+        Self.additionLinesResolver?(gitHubInstanceResolver()) ?? gitHubInstanceResolver().pullRequest.additions ?? 0
     }
     
     public var deletionLines: Int {
-        deletionLinesResolver?() ?? gitHubInstanceResolver().pullRequest.deletions ?? 0
+        Self.deletionLinesResolver?(gitHubInstanceResolver()) ?? gitHubInstanceResolver().pullRequest.deletions ?? 0
     }
     
     public var modifiedLines: Int {
@@ -75,7 +63,7 @@ extension PRMetaData {
     }
     
     public var modifiedFiles: [String] {
-        modifiedFilesResolver?() ?? gitInstanceResolver().modifiedFiles
+        Self.modifiedFilesResolver?(gitInstanceResolver()) ?? gitInstanceResolver().modifiedFiles
     }
     
     public func hasModifiedFile(at filePath: String) -> Bool {
@@ -87,7 +75,7 @@ extension PRMetaData {
     }
     
     public var commits: [GitCommit] {
-        commitsResolver?() ?? gitInstanceResolver().commits
+        Self.commitsResolver?(gitInstanceResolver()) ?? gitInstanceResolver().commits
     }
     
     public func diffLines(in filePath: String) -> (deletions: [String], additions: [String]) {
