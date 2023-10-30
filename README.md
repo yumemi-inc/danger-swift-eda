@@ -1,3 +1,7 @@
+[![Build](https://github.com/yumemi-inc/danger-swift-eda/actions/workflows/test.yml/badge.svg)](https://github.com/yumemi-inc/danger-swift-eda/actions/workflows/test.yml)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fyumemi-inc%2Fdanger-swift-eda%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/yumemi-inc/danger-swift-eda)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fyumemi-inc%2Fdanger-swift-eda%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/yumemi-inc/danger-swift-eda)
+
 # danger-swift-eda
 
 A [danger-swift](https://github.com/danger/swift) plug-in to check if the PR matches a specific workflow (e.g. Git-Flow) 
