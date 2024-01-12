@@ -354,7 +354,7 @@ extension GitFlow.Branch {
     public static func defaultParsingMethod(name: String) -> Self? {
         
         switch name {
-        case "main":
+        case "main", "master":
             return .main
             
         case "develop":
