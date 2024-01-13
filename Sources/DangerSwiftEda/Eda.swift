@@ -12,7 +12,8 @@ import DangerSwiftShoki
 
 // MARK: resolvers and executors
 public struct Eda {
-    
+    public static var gitHostingInstance: GitHostingInstance?
+
     private let prMetaDataResolver: () -> PRMetaData
     private let prUtilityResolver: () -> PRUtility
     private let shokiResolver: () -> Shoki
@@ -43,6 +44,10 @@ extension Eda {
         let utility = prUtilityResolver()
         let shoki = shokiResolver()
         
+        if metadata.customGitHostingInstance == nil {
+            utility.message("local PR Check: skip")
+            return
+        }
         do {
             let report = try workflow.doWorkflowCheck(against: metadata, using: utility)
             shoki.report(report)

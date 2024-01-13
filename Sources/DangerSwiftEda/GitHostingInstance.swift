@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  GitHostingInstance.swift
 //  
 //
 //  Created by 古宮 伸久 on 2024/01/12.
@@ -22,11 +22,11 @@ extension Danger.GitHub: GitHostingInstance {
     public var headBranchName: String {
         pullRequest.head.ref
     }
-    
+
     public var additionLines: Int? {
         pullRequest.additions
     }
-    
+
     public var deletionLines: Int? {
         pullRequest.deletions
     }
