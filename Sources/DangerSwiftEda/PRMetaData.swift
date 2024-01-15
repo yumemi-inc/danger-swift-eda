@@ -14,7 +14,7 @@ import DangerSwiftHammer
 // MARK: resolvers
 public struct PRMetaData {
     
-    private let gitHubInstanceResolver: () -> Danger.GitHub
+    private let gitHostingInstanceResolver: () -> GitHostingInstance?
     private let gitInstanceResolver: () -> Danger.Git
     private let hammerResolver: () -> Hammer
     
@@ -26,9 +26,9 @@ public struct PRMetaData {
     private let deletionLinesResolver: (() -> Int)?
     private let modifiedFilesResolver: (() -> [String])?
     private let commitsResolver: (() -> [GitCommit])?
-    
+
     init(
-        gitHubInstanceResolver: @escaping () -> Danger.GitHub,
+        gitHostingInstanceResolver: @escaping () -> GitHostingInstance?,
         gitInstanceResolver: @escaping () -> Danger.Git,
         hammerResolver: @escaping () -> Hammer,
         baseBranchNameResolver: (() -> String)? = nil,
@@ -38,7 +38,7 @@ public struct PRMetaData {
         modifiedFilesResolver: (() -> [String])? = nil,
         commitsResolver: (() -> [GitCommit])? = nil
     ) {
-        self.gitHubInstanceResolver = gitHubInstanceResolver
+        self.gitHostingInstanceResolver = gitHostingInstanceResolver
         self.gitInstanceResolver = gitInstanceResolver
         self.hammerResolver = hammerResolver
         self.baseBranchNameResolver = baseBranchNameResolver
@@ -48,26 +48,25 @@ public struct PRMetaData {
         self.modifiedFilesResolver = modifiedFilesResolver
         self.commitsResolver = commitsResolver
     }
-    
 }
 
 // MARK: resolved properties
 extension PRMetaData {
     
     public var baseBranchName: String {
-        baseBranchNameResolver?() ?? gitHubInstanceResolver().pullRequest.base.ref
+        baseBranchNameResolver?() ?? gitHostingInstanceResolver()?.baseBranchName ?? ""
     }
     
     public var headBranchName: String {
-        headBranchNameResolver?() ?? gitHubInstanceResolver().pullRequest.head.ref
+        headBranchNameResolver?() ?? gitHostingInstanceResolver()?.headBranchName ?? ""
     }
     
     public var additionLines: Int {
-        additionLinesResolver?() ?? gitHubInstanceResolver().pullRequest.additions ?? 0
+        additionLinesResolver?() ?? gitHostingInstanceResolver()?.additionLines ?? 0
     }
     
     public var deletionLines: Int {
-        deletionLinesResolver?() ?? gitHubInstanceResolver().pullRequest.deletions ?? 0
+        deletionLinesResolver?() ?? gitHostingInstanceResolver()?.deletionLines ?? 0
     }
     
     public var modifiedLines: Int {
@@ -93,9 +92,14 @@ extension PRMetaData {
     public func diffLines(in filePath: String) -> (deletions: [String], additions: [String]) {
         hammerResolver().diffLines(in: filePath)
     }
-    
+
+    @available(*, deprecated, renamed: "customGitHostingInstance")
     public var customGitHubInstance: Danger.GitHub {
-        gitHubInstanceResolver()
+        Danger().github
+    }
+
+    public var customGitHostingInstance: GitHostingInstance? {
+        gitHostingInstanceResolver()
     }
     
     public var customGitInstance: Danger.Git {

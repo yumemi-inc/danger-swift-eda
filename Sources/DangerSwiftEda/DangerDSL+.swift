@@ -12,7 +12,7 @@ extension DangerDSL {
     public var eda: Eda {
         .init(
             prMetaDataResolver: { .init(
-                gitHubInstanceResolver: { github },
+                gitHostingInstanceResolver: { Eda.gitHostingInstance ?? github },
                 gitInstanceResolver: { git },
                 hammerResolver: { hammer }
             )},
