@@ -92,7 +92,12 @@ extension PRMetaData {
     public func diffLines(in filePath: String) -> (deletions: [String], additions: [String]) {
         hammerResolver().diffLines(in: filePath)
     }
-    
+
+    @available(*, deprecated, renamed: "customGitHostingInstance")
+    public var customGitHubInstance: Danger.GitHub {
+        Danger().github
+    }
+
     public var customGitHostingInstance: GitHostingInstance? {
         gitHostingInstanceResolver()
     }
