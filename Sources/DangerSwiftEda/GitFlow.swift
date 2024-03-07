@@ -43,7 +43,7 @@ public struct GitFlow {
         
     }
     
-    public struct Configuration {
+    public final class Configuration {
         
         public enum ChangeLogUpdateRequirement {
             case no
@@ -55,7 +55,7 @@ public struct GitFlow {
             case yes(path: String, keyword: String)
         }
         
-        public var branchParsingMethod: (String) -> GitFlow.Branch?
+        public var branchParsingMethod: (String) -> GitFlow.Branch? = { _ in nil }
         public var acceptsMergeCommitsInFeaturePRs: Bool
         public var recommendedMaxDiffAmountInFeaturePRs: Int
         public var suggestsChangeLogUpdate: ChangeLogUpdateRequirement
@@ -63,19 +63,21 @@ public struct GitFlow {
         public var ticketAddressResolver: ((String) -> String)?
         
         public init(
-            branchParsingMethod: @escaping (String) -> GitFlow.Branch? = GitFlow.Branch.defaultParsingMethod(name:),
+            branchParsingMethod: ((String) -> GitFlow.Branch?)? = nil,
             acceptsMergeCommitsInFeaturePRs: Bool = false,
             recommendedMaxDiffAmountInFeaturePRs: Int = 300,
             suggestsChangeLogUpdate: ChangeLogUpdateRequirement = .yes(path: "CHANGELOG.md"),
             requiresVersionModificationInReleasePRs: VersionUpdateRequirement = .no,
             ticketAddressResolver: ((String) -> String)? = nil
         ) {
-            self.branchParsingMethod = branchParsingMethod
             self.acceptsMergeCommitsInFeaturePRs = acceptsMergeCommitsInFeaturePRs
             self.recommendedMaxDiffAmountInFeaturePRs = recommendedMaxDiffAmountInFeaturePRs
             self.suggestsChangeLogUpdate = suggestsChangeLogUpdate
             self.requiresVersionModificationInReleasePRs = requiresVersionModificationInReleasePRs
             self.ticketAddressResolver = ticketAddressResolver
+            self.branchParsingMethod = branchParsingMethod ?? { [weak self] branch in
+                GitFlow.Branch.defaultParsingMethod(name: branch, self?.ticketAddressResolver)
+            }
         }
         
         public static var `default`: Configuration {
@@ -351,7 +353,7 @@ extension GitFlow: PRWorkflow {
 // MARK: - Convenient Extensions
 extension GitFlow.Branch {
     
-    public static func defaultParsingMethod(name: String) -> Self? {
+    public static func defaultParsingMethod(name: String, _ ticketAddressResolver: ((String) -> String)? = nil) -> Self? {
         
         switch name {
         case "main":
@@ -361,13 +363,13 @@ extension GitFlow.Branch {
             return .develop
             
         case let hotfix where hotfix.contains(pattern: #"\bhotfix\b[/-]"#):
-            return .hotfix(hotfix.extractingReference())
+            return .hotfix(hotfix.extractingReference(ticketAddressResolver))
             
         case let feature where feature.contains(pattern: #"\bfeature\b[/-]"#):
-            return .feature(feature.extractingReference())
+            return .feature(feature.extractingReference(ticketAddressResolver))
             
         case let release where release.contains(pattern: #"\brelease\b[/-]"#):
-            return .release(release.extractingReference())
+            return .release(release.extractingReference(ticketAddressResolver))
             
         case let ci where ci.contains(pattern: #"\bci\b[/-]"#):
             return .ci
@@ -393,9 +395,12 @@ private extension String {
         
     }
     
-    private func extractingTicket() -> GitFlow.Branch.Reference? {
+    private func extractingTicket(_ ticketAddressResolver: ((String) -> String)?) -> GitFlow.Branch.Reference? {
         
-        if let ticketID = substring(ofPattern: #"\bticket\b[/-](.+)"#) {
+        if let ticketAddressResolver {
+            return .ticket(ticketAddressResolver(self))
+
+        } else if let ticketID = substring(ofPattern: #"\bticket\b[/-](.+)"#) {
             return .ticket(ticketID)
             
         } else {
@@ -404,9 +409,9 @@ private extension String {
         
     }
     
-    func extractingReference() -> GitFlow.Branch.Reference? {
+    func extractingReference(_ ticketAddressResolver: ((String) -> String)?) -> GitFlow.Branch.Reference? {
         
-        return extractingIssue() ?? extractingTicket()
+        return extractingIssue() ?? extractingTicket(ticketAddressResolver)
         
     }
     
